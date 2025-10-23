@@ -53,24 +53,44 @@ mvn javafx:run
 
 ```
 src/main/java/com/avn/weather/
-├── App.java                    # 主应用程序入口
-├── model/                      # 数据模型
-│   ├── WeatherInfo.java       # 天气信息模型
-│   ├── AirQuality.java        # 空气质量模型
-│   └── CityDistrict.java      # 城市区域模型
-├── service/                    # 服务层
-│   └── WeatherDataService.java # 数据服务（伪数据）
-└── ui/                         # 用户界面组件
-    ├── WeatherCard.java        # 天气卡片组件
-    └── AirQualityPanel.java    # 空气质量面板组件
+├── App.java                         # 主应用程序入口
+├── model/                           # 数据模型
+│   ├── WeatherInfo.java            # 天气信息模型
+│   ├── AirQuality.java             # 空气质量模型
+│   ├── CityDistrict.java           # 城市区域模型
+│   ├── geo/                        # 地理位置相关模型
+│   │   ├── LocationInfo.java       # 地理位置信息模型
+│   │   └── LocationResponse.java   # 地理位置查询响应模型
+│   ├── weather/                    # 天气相关模型
+│   │   ├── DailyWeather.java       # 每日天气数据模型
+│   │   └── WeatherResponse.java    # 天气查询响应模型
+│   └── air/                        # 空气质量相关模型
+│       ├── AirQualityNow.java      # 当前空气质量数据模型
+│       └── AirQualityResponse.java # 空气质量查询响应模型
+├── service/                        # 服务层
+│   ├── WeatherDataService.java    # 主数据服务（整合各API）
+│   ├── GeoLocationService.java    # 地理位置查询服务
+│   ├── WeatherApiService.java     # 天气预报API服务
+│   └── AirQualityApiService.java  # 空气质量API服务
+├── util/                           # 工具类
+│   └── WeatherDataConverter.java  # 数据转换工具
+└── ui/                             # 用户界面组件
+    ├── WeatherCard.java            # 天气卡片组件
+    └── AirQualityPanel.java        # 空气质量面板组件
 ```
 
 ## 数据说明
 
-目前使用伪数据进行演示，实际部署时可以：
-1. 接入真实的天气API（如智慧天气应用编程接口）
-2. 接入多个空气质量数据源进行对比
-3. 实现数据缓存和定时更新机制
+本应用已接入和风天气API，提供真实的天气和空气质量数据：
+1. **地理位置查询**: 使用和风天气地理位置查询API获取城市和区域信息
+2. **天气预报**: 调用和风天气7天预报API获取详细天气信息
+3. **空气质量**: 通过和风天气空气质量API获取实时空气质量数据
+4. **数据缓存**: 实现了城市ID缓存机制，提高查询效率
+5. **容错处理**: 当API不可用时，自动切换到备用数据确保应用正常运行
+
+使用前需要：
+1. 在API服务类中配置真实的API Host和Token
+2. 确保网络连接正常以访问和风天气API
 
 ## 扩展功能
 

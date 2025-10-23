@@ -1,7 +1,7 @@
 package com.avn.weather.api;
 
 import com.alibaba.fastjson.JSON;
-import com.avn.weather.model.WeatherForecast;
+import com.avn.weather.model.weather.WeatherForecast;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;

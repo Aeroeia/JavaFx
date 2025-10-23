@@ -1,4 +1,4 @@
-package com.avn.weather.model;
+package com.avn.weather.model.quality;
 
 import java.time.LocalDateTime;
 

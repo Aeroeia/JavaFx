@@ -1,4 +1,4 @@
-package com.avn.weather.model;
+package com.avn.weather.model.weather;
 
 import java.time.LocalDate;
 

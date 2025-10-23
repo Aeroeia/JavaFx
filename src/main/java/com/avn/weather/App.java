@@ -1,8 +1,8 @@
 package com.avn.weather;
 
-import com.avn.weather.model.AirQuality;
-import com.avn.weather.model.CityDistrict;
-import com.avn.weather.model.WeatherInfo;
+import com.avn.weather.model.quality.AirQuality;
+import com.avn.weather.model.district.CityDistrict;
+import com.avn.weather.model.weather.WeatherInfo;
 import com.avn.weather.service.WeatherDataService;
 import com.avn.weather.ui.AirQualityPanel;
 import com.avn.weather.ui.WeatherCard;

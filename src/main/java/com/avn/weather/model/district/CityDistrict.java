@@ -1,4 +1,7 @@
-package com.avn.weather.model;
+package com.avn.weather.model.district;
+
+import com.avn.weather.model.quality.AirQuality;
+import com.avn.weather.model.weather.WeatherInfo;
 
 import java.util.List;
 

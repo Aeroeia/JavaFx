@@ -1,6 +1,6 @@
 package com.avn.weather.ui;
 
-import com.avn.weather.model.WeatherInfo;
+import com.avn.weather.model.weather.WeatherInfo;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

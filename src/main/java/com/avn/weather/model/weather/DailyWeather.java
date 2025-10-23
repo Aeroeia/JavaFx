@@ -1,4 +1,4 @@
-package com.avn.weather.model;
+package com.avn.weather.model.weather;
 
 /**
  * 每日天气预报数据模型

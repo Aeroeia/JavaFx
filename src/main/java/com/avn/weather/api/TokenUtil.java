@@ -16,13 +16,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @program: 极度真实还原大麦网高并发实战项目。 添加 阿星不是程序员 微信，添加时备注 大麦 来获取项目的完整资料
- * @description: token工具
- * @author: 阿星不是程序员
- **/
+ * Token工具类
+ * 提供JWT Token生成和缓存功能
+ */
 public class TokenUtil {
-
+    
+    // Token缓存
+    private static String cachedToken = null;
+    private static long tokenExpireTime = 0;
+    
+    // Token有效期（秒），设置为1小时
+    private static final long TOKEN_VALIDITY_SECONDS = 3600;
+    
+    /**
+     * 获取Token，如果缓存的Token仍然有效则直接返回，否则生成新的Token
+     */
     public static String getToken() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+        long currentTime = System.currentTimeMillis() / 1000;
+        
+        // 检查缓存的Token是否仍然有效（提前5分钟刷新）
+        if (cachedToken != null && currentTime < (tokenExpireTime - 300)) {
+            return cachedToken;
+        }
+        
+        // 生成新的Token
+        cachedToken = generateNewToken();
+        tokenExpireTime = currentTime + TOKEN_VALIDITY_SECONDS;
+        
+        return cachedToken;
+    }
+    
+    /**
+     * 生成新的JWT Token
+     */
+    private static String generateNewToken() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+        System.out.println("生成token");
         // 1️⃣ Header
         Map<String, Object> header = new HashMap<>();
         header.put("alg", "EdDSA");
@@ -57,21 +85,20 @@ public class TokenUtil {
         // 6️⃣ 拼接最终 JWT
         String jwt = signingInput + "." + sigBase64Url;
 
-        System.out.println("JWT Token:");
-        System.out.println(jwt);
-
-        // ==== 3️⃣ 公钥解析 ====
+        // 验证签名（可选，用于确保Token正确性）
         String publicKeyBase64 = "MCowBQYDK2VwAyEACZR/bRIiOUo1bobd7deBp2PbS+nEbXYWYf9JBz0kQBo=";
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
         PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 
-        // ==== 4️⃣ 验证签名 ====
         Signature verifier = Signature.getInstance("Ed25519");
         verifier.initVerify(publicKey);
         verifier.update(signingInput.getBytes("UTF-8"));
         boolean isValid = verifier.verify(Base64UrlCodec.BASE64URL.decode(sigBase64Url));
 
-        System.out.println("签名验证结果: " + isValid);
+        if (!isValid) {
+            throw new SignatureException("Token签名验证失败");
+        }
+        
         return jwt;
     }
 
