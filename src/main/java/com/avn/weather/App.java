@@ -33,11 +33,15 @@ public class App extends Application {
     
     @Override
     public void start(Stage stage) {
+        System.out.println("=== JavaFX 天气应用启动 ===");
         weatherService = new WeatherDataService();
         
+        System.out.println("正在初始化组件...");
         initializeComponents();
         setupLayout();
         setupEventHandlers();
+        
+        System.out.println("正在加载初始数据...");
         loadInitialData();
         
         Scene scene = new Scene(createMainLayout(), 1000, 700);
@@ -45,6 +49,8 @@ public class App extends Application {
         stage.setTitle("天气和空气质量查询系统");
         stage.setScene(scene);
         stage.show();
+        
+        System.out.println("应用界面已显示，启动完成！");
     }
     
     private void initializeComponents() {
@@ -78,6 +84,7 @@ public class App extends Application {
         cityComboBox.setOnAction(e -> {
             CityDistrict selectedCity = cityComboBox.getValue();
             if (selectedCity != null) {
+                System.out.println("用户选择了城市: " + selectedCity.getCityName());
                 districtComboBox.getItems().clear();
                 districtComboBox.getItems().addAll(selectedCity.getDistricts());
                 districtComboBox.setDisable(false);
@@ -86,24 +93,31 @@ public class App extends Application {
                 // 清空之前的数据显示
                 weatherCardsContainer.getChildren().clear();
                 airQualityPanel.updateAirQuality(null);
+                System.out.println("已清空之前的天气数据，等待选择区域...");
             }
         });
         
         districtComboBox.setOnAction(e -> {
             CityDistrict.District selectedDistrict = districtComboBox.getValue();
             if (selectedDistrict != null) {
+                System.out.println("用户选择了区域: " + selectedDistrict.getDistrictName() + " (代码: " + selectedDistrict.getDistrictCode() + ")");
                 loadWeatherAndAirQuality(selectedDistrict.getDistrictCode());
             }
         });
     }
     
     private void loadInitialData() {
+        System.out.println("开始加载支持的城市列表...");
         List<CityDistrict> cities = weatherService.getSupportedCities();
         cityComboBox.getItems().addAll(cities);
+        System.out.println("已加载 " + cities.size() + " 个城市");
     }
     
     private void loadWeatherAndAirQuality(String districtCode) {
+        System.out.println("正在加载区域代码: " + districtCode + " 的天气和空气质量数据...");
+        
         // 加载天气预报
+        System.out.println("获取天气预报数据...");
         List<WeatherInfo> forecast = weatherService.getWeatherForecast(districtCode);
         weatherCardsContainer.getChildren().clear();
         
@@ -112,10 +126,15 @@ public class App extends Application {
             card.updateWeather(weather);
             weatherCardsContainer.getChildren().add(card);
         }
+        System.out.println("已加载 " + forecast.size() + " 天的天气预报");
         
         // 加载空气质量
+        System.out.println("获取空气质量数据...");
         AirQuality airQuality = weatherService.getAirQuality(districtCode);
         airQualityPanel.updateAirQuality(airQuality);
+        System.out.println("空气质量数据加载完成");
+        
+        System.out.println("=== 数据加载完成 ===");
     }
     
     private BorderPane createMainLayout() {
@@ -176,6 +195,7 @@ public class App extends Application {
     }
     
     public static void main(String[] args) {
+        System.out.println("启动 JavaFX 天气应用...");
         launch();
     }
 }
