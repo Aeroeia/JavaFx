@@ -2,14 +2,17 @@ package com.avn.weather.api;
 
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.Base64UrlCodec;
 
+import java.io.UnsupportedEncodingException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,63 +22,61 @@ import java.util.Map;
  **/
 public class TokenUtil {
 
-    /**
-     * 指定签名的时候使用的签名算法，也就是header那部分。
-     *
-     */
-    private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
-    /**
-     * 用户登录成功后生成Jwt
-     * 使用Hs256算法
-     *
-     * @param info      登录成功的user对象
-     * @param ttlMillis jwt过期时间
-     * @param tokenSecret 私钥
-     * @return
-     */
-    public static String createToken(Map<String,Object> header, String info, long ttlMillis, String tokenSecret) {
-        //生成JWT的时间
-        long nowMillis = System.currentTimeMillis();
+    public static String getToken() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+        // 1️⃣ Header
+        Map<String, Object> header = new HashMap<>();
+        header.put("alg", "EdDSA");
+        header.put("kid", "KKWECXMHXH");
 
-        //创建一个JwtBuilder，设置jwt的body
-        JwtBuilder builder = Jwts.builder()
-                .setHeader(header)
-                //iat: jwt的签发时间
-                .setIssuedAt(new Date(nowMillis))
-                //代表这个JWT的主体，即它的所有人，这个是一个json格式的字符串。
-                .setSubject(info)
-                //设置签名使用的签名算法和签名使用的秘钥
-                .signWith(SIGNATURE_ALGORITHM, tokenSecret);
-        if (ttlMillis >= 0) {
-            //设置过期时间
-            builder.setExpiration(new Date(nowMillis + ttlMillis));
-        }
-        return builder.compact();
+        // 2️⃣ Payload（注意 iat 和 exp 必须是秒级 Unix 时间戳）
+        long now = System.currentTimeMillis() / 1000; // 秒级
+        JSONObject payload = new JSONObject();
+        payload.put("sub", "3DKTNRHP5U");
+        payload.put("iat", now - 30);
+        payload.put("exp", now + 86400); // 24小时有效期
+
+        // 3️⃣ Base64URL 编码 Header 和 Payload
+        Base64UrlCodec base64Url = new Base64UrlCodec();
+        String headerEncoded = base64Url.encode(JSON.toJSONString(header).getBytes());
+        String payloadEncoded = base64Url.encode(payload.toJSONString().getBytes());
+        String signingInput = headerEncoded + "." + payloadEncoded;
+
+        // 4️⃣ 解析私钥
+        String privateKeyBase64 = "MC4CAQAwBQYDK2VwBCIEICduFtPb/FsoNNvqP1f2+axOWIWjK9wyLHGqvZfduqiy";
+        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
+        KeyFactory keyFactory = KeyFactory.getInstance("Ed25519");
+        PrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+
+        // 5️⃣ Ed25519 签名
+        Signature signature = Signature.getInstance("Ed25519");
+        signature.initSign(privateKey);
+        signature.update(signingInput.getBytes("UTF-8"));
+        byte[] sigBytes = signature.sign();
+        String sigBase64Url = base64Url.encode(sigBytes);
+
+        // 6️⃣ 拼接最终 JWT
+        String jwt = signingInput + "." + sigBase64Url;
+
+        System.out.println("JWT Token:");
+        System.out.println(jwt);
+
+        // ==== 3️⃣ 公钥解析 ====
+        String publicKeyBase64 = "MCowBQYDK2VwAyEACZR/bRIiOUo1bobd7deBp2PbS+nEbXYWYf9JBz0kQBo=";
+        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
+        PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+
+        // ==== 4️⃣ 验证签名 ====
+        Signature verifier = Signature.getInstance("Ed25519");
+        verifier.initVerify(publicKey);
+        verifier.update(signingInput.getBytes("UTF-8"));
+        boolean isValid = verifier.verify(Base64UrlCodec.BASE64URL.decode(sigBase64Url));
+
+        System.out.println("签名验证结果: " + isValid);
+        return jwt;
     }
 
-
-    /**
-     * Token的解密
-     *
-     * @param token 加密后的token
-     * @param tokenSecret 私钥
-     * @return
-     */
-    public static String parseToken(String token, String tokenSecret) {
-        try {
-            return Jwts.parser()
-                    //设置签名的秘钥
-                    .setSigningKey(tokenSecret)
-                    //设置需要解析的jwt
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-        }catch (ExpiredJwtException jwtException) {
-            System.out.println("token已过期");
-        }
+    public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedEncodingException, SignatureException {
+        getToken();
     }
 
-    public static void main(String[] args) {
-
-    }
 }
