@@ -33,7 +33,7 @@ public class TokenUtil {
         JSONObject payload = new JSONObject();
         payload.put("sub", "3DKTNRHP5U");
         payload.put("iat", now - 30);
-        payload.put("exp", now + 86400); // 24小时有效期
+        payload.put("exp", now + 80000);
 
         // 3️⃣ Base64URL 编码 Header 和 Payload
         Base64UrlCodec base64Url = new Base64UrlCodec();
