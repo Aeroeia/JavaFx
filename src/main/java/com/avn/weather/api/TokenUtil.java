@@ -98,12 +98,12 @@ public class TokenUtil {
         if (!isValid) {
             throw new SignatureException("Token签名验证失败");
         }
-        
+        System.out.println(jwt);
         return jwt;
     }
 
     public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedEncodingException, SignatureException {
-        getToken();
+        System.out.println(getToken());
     }
 
 }

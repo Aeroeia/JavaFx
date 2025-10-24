@@ -27,7 +27,7 @@ public class WeatherApiService {
     
     // API配置
     private static final String API_HOST = "nv3md8tnqq.re.qweatherapi.com";
-    private static final String WEATHER_API_URL = "https://" + API_HOST + "/weather/v7/forecast/7d";
+    private static final String WEATHER_API_URL = "https://" + API_HOST + "/v7/weather/7d";
     
     private final CloseableHttpClient httpClient;
     
@@ -56,8 +56,31 @@ public class WeatherApiService {
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 
+                // 添加调试信息
+                System.out.println("API响应状态码: " + response.getCode());
+                System.out.println("API响应内容: " + responseBody);
+                
+                // 检查响应是否为空
+                if (responseBody == null || responseBody.trim().isEmpty()) {
+                    System.err.println("API返回空响应");
+                    return new ArrayList<>();
+                }
+                
                 // 解析JSON响应
-                WeatherResponse weatherResponse = JSON.parseObject(responseBody, WeatherResponse.class);
+                WeatherResponse weatherResponse = null;
+                try {
+                    weatherResponse = JSON.parseObject(responseBody, WeatherResponse.class);
+                } catch (Exception e) {
+                    System.err.println("JSON解析失败: " + e.getMessage());
+                    System.err.println("响应内容: " + responseBody);
+                    return new ArrayList<>();
+                }
+                
+                // 检查解析结果
+                if (weatherResponse == null) {
+                    System.err.println("JSON解析结果为null");
+                    return new ArrayList<>();
+                }
                 
                 if ("200".equals(weatherResponse.getCode()) && weatherResponse.getDaily() != null) {
                     return weatherResponse.getDaily();
@@ -93,7 +116,7 @@ public class WeatherApiService {
             String token = TokenUtil.getToken();
             
             // 构建请求URL
-            String url = "https://" + API_HOST + "/weather/v7/forecast/3d?location=" + locationId + "&key=" + token;
+            String url = "https://" + API_HOST + "/v7/weather/3d?location=" + locationId + "&key=" + token;
             
             // 创建HTTP请求
             HttpGet httpGet = new HttpGet(url);
@@ -104,8 +127,31 @@ public class WeatherApiService {
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 
+                // 添加调试信息
+                System.out.println("3天预报API响应状态码: " + response.getCode());
+                System.out.println("3天预报API响应内容: " + responseBody);
+                
+                // 检查响应是否为空
+                if (responseBody == null || responseBody.trim().isEmpty()) {
+                    System.err.println("3天预报API返回空响应");
+                    return new ArrayList<>();
+                }
+                
                 // 解析JSON响应
-                WeatherResponse weatherResponse = JSON.parseObject(responseBody, WeatherResponse.class);
+                WeatherResponse weatherResponse = null;
+                try {
+                    weatherResponse = JSON.parseObject(responseBody, WeatherResponse.class);
+                } catch (Exception e) {
+                    System.err.println("3天预报JSON解析失败: " + e.getMessage());
+                    System.err.println("响应内容: " + responseBody);
+                    return new ArrayList<>();
+                }
+                
+                // 检查解析结果
+                if (weatherResponse == null) {
+                    System.err.println("3天预报JSON解析结果为null");
+                    return new ArrayList<>();
+                }
                 
                 if ("200".equals(weatherResponse.getCode()) && weatherResponse.getDaily() != null) {
                     return weatherResponse.getDaily();

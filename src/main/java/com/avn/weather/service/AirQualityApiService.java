@@ -51,8 +51,31 @@ public class AirQualityApiService {
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 
+                // 添加调试信息
+                System.out.println("空气质量API响应状态码: " + response.getCode());
+                System.out.println("空气质量API响应内容: " + responseBody);
+                
+                // 检查响应是否为空
+                if (responseBody == null || responseBody.trim().isEmpty()) {
+                    System.err.println("空气质量API返回空响应");
+                    return null;
+                }
+                
                 // 解析JSON响应
-                AirQualityResponse airResponse = JSON.parseObject(responseBody, AirQualityResponse.class);
+                AirQualityResponse airResponse = null;
+                try {
+                    airResponse = JSON.parseObject(responseBody, AirQualityResponse.class);
+                } catch (Exception e) {
+                    System.err.println("空气质量JSON解析失败: " + e.getMessage());
+                    System.err.println("响应内容: " + responseBody);
+                    return null;
+                }
+                
+                // 检查解析结果
+                if (airResponse == null) {
+                    System.err.println("空气质量JSON解析结果为null");
+                    return null;
+                }
                 
                 if ("200".equals(airResponse.getCode()) && airResponse.getNow() != null) {
                     return convertToAirQuality(airResponse);
