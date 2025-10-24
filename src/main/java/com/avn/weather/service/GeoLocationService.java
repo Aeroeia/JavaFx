@@ -116,7 +116,7 @@ public class GeoLocationService {
      * @return 地理位置信息列表
      */
     public List<LocationInfo> searchLocation(String location, String adm) {
-        return searchLocation(location, adm, "cn", 10);
+        return searchLocation(location, adm, "cn", 20);
     }
     
     /**

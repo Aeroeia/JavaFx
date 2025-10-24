@@ -1,10 +1,8 @@
 package com.avn.weather;
 
-import com.avn.weather.model.quality.AirQuality;
 import com.avn.weather.model.district.CityDistrict;
 import com.avn.weather.model.weather.WeatherInfo;
 import com.avn.weather.service.WeatherDataService;
-import com.avn.weather.ui.AirQualityPanel;
 import com.avn.weather.ui.WeatherCard;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -28,7 +26,6 @@ public class App extends Application {
     private ComboBox<CityDistrict> cityComboBox;
     private ComboBox<CityDistrict.District> districtComboBox;
     private HBox weatherCardsContainer;
-    private AirQualityPanel airQualityPanel;
     private Label titleLabel;
     
     @Override
@@ -54,7 +51,7 @@ public class App extends Application {
     }
     
     private void initializeComponents() {
-        titleLabel = new Label("天气和空气质量查询系统");
+        titleLabel = new Label("天气预报查询系统");
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
         titleLabel.setStyle("-fx-text-fill: #2c3e50;");
         
@@ -70,8 +67,6 @@ public class App extends Application {
         weatherCardsContainer = new HBox(10);
         weatherCardsContainer.setAlignment(Pos.CENTER);
         weatherCardsContainer.setPadding(new Insets(20));
-        
-        airQualityPanel = new AirQualityPanel();
     }
     
     private void setupLayout() {
@@ -92,7 +87,6 @@ public class App extends Application {
                 
                 // 清空之前的数据显示
                 weatherCardsContainer.getChildren().clear();
-                airQualityPanel.updateAirQuality(null);
                 System.out.println("已清空之前的天气数据，等待选择区域...");
             }
         });
@@ -101,7 +95,7 @@ public class App extends Application {
             CityDistrict.District selectedDistrict = districtComboBox.getValue();
             if (selectedDistrict != null) {
                 System.out.println("用户选择了区域: " + selectedDistrict.getDistrictName() + " (代码: " + selectedDistrict.getDistrictCode() + ")");
-                loadWeatherAndAirQuality(selectedDistrict.getDistrictCode());
+                loadWeather(selectedDistrict.getDistrictCode());
             }
         });
     }
@@ -113,8 +107,8 @@ public class App extends Application {
         System.out.println("已加载 " + cities.size() + " 个城市");
     }
     
-    private void loadWeatherAndAirQuality(String districtCode) {
-        System.out.println("正在加载区域代码: " + districtCode + " 的天气和空气质量数据...");
+    private void loadWeather(String districtCode) {
+        System.out.println("正在加载区域代码: " + districtCode + " 的天气数据...");
         
         // 加载天气预报
         System.out.println("获取天气预报数据...");
@@ -128,13 +122,7 @@ public class App extends Application {
         }
         System.out.println("已加载 " + forecast.size() + " 天的天气预报");
         
-        // 加载空气质量
-        System.out.println("获取空气质量数据...");
-        AirQuality airQuality = weatherService.getAirQuality(districtCode);
-        airQualityPanel.updateAirQuality(airQuality);
-        System.out.println("空气质量数据加载完成");
-        
-        System.out.println("=== 数据加载完成 ===");
+        System.out.println("=== 天气数据加载完成 ===");
     }
     
     private BorderPane createMainLayout() {
@@ -177,16 +165,9 @@ public class App extends Application {
         weatherScrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         weatherScrollPane.setPrefHeight(180);
         
-        // 空气质量标题
-        Label airQualityTitle = new Label("实时空气质量");
-        airQualityTitle.setFont(Font.font("System", FontWeight.BOLD, 18));
-        airQualityTitle.setStyle("-fx-text-fill: #495057;");
-        
         centerContainer.getChildren().addAll(
             weatherTitle,
-            weatherScrollPane,
-            airQualityTitle,
-            airQualityPanel
+            weatherScrollPane
         );
         
         root.setCenter(centerContainer);

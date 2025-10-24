@@ -1,6 +1,5 @@
 package com.avn.weather.service;
 
-import com.avn.weather.model.quality.AirQuality;
 import com.avn.weather.model.district.CityDistrict;
 import com.avn.weather.model.weather.WeatherInfo;
 import com.avn.weather.model.weather.DailyWeather;
@@ -17,7 +16,6 @@ public class WeatherDataService {
     
     private final GeoLocationService geoLocationService;
     private final WeatherApiService weatherApiService;
-    private final AirQualityApiService airQualityApiService;
     
     // 缓存城市ID映射，避免重复查询
     private final Map<String, String> cityIdCache = new HashMap<>();
@@ -25,7 +23,6 @@ public class WeatherDataService {
     public WeatherDataService() {
         this.geoLocationService = new GeoLocationService();
         this.weatherApiService = new WeatherApiService();
-        this.airQualityApiService = new AirQualityApiService();
         
         // 初始化城市ID缓存
         initializeCityCache();
@@ -54,25 +51,25 @@ public class WeatherDataService {
         
         for (String cityName : majorCities) {
             try {
-                // 查询城市的区域信息
-                List<LocationInfo> locations = geoLocationService.searchLocation(cityName);
-                if (!locations.isEmpty()) {
-                    // 获取主城区
-                    LocationInfo mainCity = locations.get(0);
-                    
-                    // 查询该城市的所有区域
-                    List<LocationInfo> districts = geoLocationService.searchLocation(cityName, cityName);
-                    
+                // 直接查询该城市的所有区域
+                List<LocationInfo> districts = geoLocationService.searchLocation(cityName, cityName);
+                if (!districts.isEmpty()) {
                     List<CityDistrict.District> districtList = new ArrayList<>();
+                    String cityId = null;
                     for (LocationInfo district : districts) {
-                        districtList.add(new CityDistrict.District(district.getName(), district.getId()));
-                        // 缓存区域ID
-                        cityIdCache.put(district.getName(), district.getId());
+                        if(cityId!=null){
+                            districtList.add(new CityDistrict.District(district.getName(), district.getId()));
+                            // 缓存区域ID
+                            cityIdCache.put(district.getName(), district.getId());
+                        }
+                        // 使用第一个区域的ID作为城市ID（实际上不会用到，但保持数据结构完整）
+                        else {
+                            cityId = district.getId();
+                        }
                     }
+                    System.out.println(cityName+":"+districtList);
                     
-                    cities.add(new CityDistrict(cityName, mainCity.getId(), districtList));
-                    // 缓存主城市ID
-                    cityIdCache.put(cityName, mainCity.getId());
+                    cities.add(new CityDistrict(cityName, cityId, districtList));
                 }
             } catch (Exception e) {
                 System.err.println("查询城市 " + cityName + " 失败: " + e.getMessage());
@@ -94,12 +91,11 @@ public class WeatherDataService {
      * 获取天气预报数据
      * 使用真实API获取天气预报
      */
-    public List<WeatherInfo> getWeatherForecast(String cityCode) {
+    public List<WeatherInfo> getWeatherForecast(String locationId) {
         try {
-            // 获取城市ID
-            String locationId = getCityLocationId(cityCode);
-            if (locationId == null) {
-                System.err.println("无法获取城市ID: " + cityCode);
+            // 直接使用传入的LocationID（从UI层传入的已经是有效的地区ID）
+            if (locationId == null || locationId.trim().isEmpty()) {
+                System.err.println("LocationID为空");
                 return new ArrayList<>();
             }
             
@@ -120,96 +116,6 @@ public class WeatherDataService {
             return new ArrayList<>();
         }
     }
-    
-    /**
-     * 获取城市的LocationID
-     */
-    private String getCityLocationId(String cityCode) {
-        // 首先从缓存中查找
-        for (Map.Entry<String, String> entry : cityIdCache.entrySet()) {
-            if (entry.getKey().equals(cityCode) || entry.getValue().equals(cityCode)) {
-                return entry.getValue();
-            }
-        }
-        
-        // 如果缓存中没有，尝试通过API查询
-        try {
-            List<LocationInfo> locations = geoLocationService.searchLocation(cityCode);
-            if (!locations.isEmpty()) {
-                String locationId = locations.get(0).getId();
-                cityIdCache.put(cityCode, locationId);
-                return locationId;
-            }
-        } catch (Exception e) {
-            System.err.println("查询城市ID失败: " + e.getMessage());
-        }
-        
-        // 如果都失败了，返回默认的北京ID
-        return "101010100";
-    }
-    
-    /**
-     * 获取天气图标路径
-     */
-    private String getWeatherIcon(String weatherType) {
-        switch (weatherType) {
-            case "晴":
-                return "/icons/sunny.png";
-            case "多云":
-                return "/icons/cloudy.png";
-            case "阴":
-                return "/icons/overcast.png";
-            case "小雨":
-                return "/icons/light_rain.png";
-            case "中雨":
-                return "/icons/moderate_rain.png";
-            case "大雨":
-                return "/icons/heavy_rain.png";
-            case "雷阵雨":
-                return "/icons/thunderstorm.png";
-            case "雪":
-                return "/icons/snow.png";
-            default:
-                return "/icons/default.png";
-        }
-    }
-    
-    /**
-     * 获取备用天气预报数据（当API不可用时使用）
-     */
 
     
-    /**
-     * 获取空气质量数据
-     * 使用真实API获取空气质量信息
-     */
-    public AirQuality getAirQuality(String cityCode) {
-        try {
-            // 获取城市ID
-            String locationId = getCityLocationId(cityCode);
-            if (locationId == null) {
-                System.err.println("无法获取城市ID: " + cityCode);
-                return null;
-            }
-            
-            // 调用空气质量API
-            AirQuality airQuality = airQualityApiService.getAirQuality(locationId);
-            
-            if (airQuality != null) {
-                return airQuality;
-            } else {
-                System.err.println("API返回空数据");
-                return null;
-            }
-            
-        } catch (Exception e) {
-            System.err.println("获取空气质量失败: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-
-    
-
 }

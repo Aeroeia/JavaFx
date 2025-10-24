@@ -1,6 +1,5 @@
 package com.avn.weather.model.district;
 
-import com.avn.weather.model.quality.AirQuality;
 import com.avn.weather.model.weather.WeatherInfo;
 
 import java.util.List;
@@ -53,7 +52,6 @@ public class CityDistrict {
         private String districtName;
         private String districtCode;
         private List<WeatherInfo> weatherForecast;
-        private AirQuality airQuality;
 
         public District() {}
 
@@ -63,11 +61,10 @@ public class CityDistrict {
         }
 
         public District(String districtName, String districtCode, 
-                       List<WeatherInfo> weatherForecast, AirQuality airQuality) {
+                       List<WeatherInfo> weatherForecast) {
             this.districtName = districtName;
             this.districtCode = districtCode;
             this.weatherForecast = weatherForecast;
-            this.airQuality = airQuality;
         }
 
         // Getters and Setters
@@ -95,13 +92,7 @@ public class CityDistrict {
             this.weatherForecast = weatherForecast;
         }
 
-        public AirQuality getAirQuality() {
-            return airQuality;
-        }
 
-        public void setAirQuality(AirQuality airQuality) {
-            this.airQuality = airQuality;
-        }
 
         @Override
         public String toString() {
