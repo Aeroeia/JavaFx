@@ -1,7 +1,5 @@
 package com.avn.weather.model.district;
 
-import com.avn.weather.model.weather.WeatherInfo;
-
 import java.util.List;
 
 /**
@@ -51,20 +49,12 @@ public class CityDistrict {
     public static class District {
         private String districtName;
         private String districtCode;
-        private List<WeatherInfo> weatherForecast;
 
         public District() {}
 
         public District(String districtName, String districtCode) {
             this.districtName = districtName;
             this.districtCode = districtCode;
-        }
-
-        public District(String districtName, String districtCode, 
-                       List<WeatherInfo> weatherForecast) {
-            this.districtName = districtName;
-            this.districtCode = districtCode;
-            this.weatherForecast = weatherForecast;
         }
 
         // Getters and Setters
@@ -82,14 +72,6 @@ public class CityDistrict {
 
         public void setDistrictCode(String districtCode) {
             this.districtCode = districtCode;
-        }
-
-        public List<WeatherInfo> getWeatherForecast() {
-            return weatherForecast;
-        }
-
-        public void setWeatherForecast(List<WeatherInfo> weatherForecast) {
-            this.weatherForecast = weatherForecast;
         }
 
 

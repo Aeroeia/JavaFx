@@ -6,7 +6,6 @@ import com.avn.weather.model.weather.DailyWeather;
 import com.avn.weather.model.geo.LocationInfo;
 import com.avn.weather.util.WeatherDataConverter;
 
-import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -80,12 +79,6 @@ public class WeatherDataService {
         return cities;
     }
     
-    /**
-     * 创建备用城市数据（当API不可用时使用）
-     */
-
-    
-
     
     /**
      * 获取天气预报数据

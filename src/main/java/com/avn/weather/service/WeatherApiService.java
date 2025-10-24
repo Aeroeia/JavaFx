@@ -26,8 +26,7 @@ import java.util.List;
 public class WeatherApiService {
     
     // API配置
-    private static final String API_HOST = "nv3md8tnqq.re.qweatherapi.com";
-    private static final String WEATHER_API_URL = "https://" + API_HOST + "/v7/weather/7d";
+    private static final String WEATHER_API_URL = "https://nv3md8tnqq.re.qweatherapi.com/v7/weather/7d";
     
     private final CloseableHttpClient httpClient;
     

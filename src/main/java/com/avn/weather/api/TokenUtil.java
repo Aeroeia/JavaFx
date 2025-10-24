@@ -102,8 +102,6 @@ public class TokenUtil {
         return jwt;
     }
 
-    public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedEncodingException, SignatureException {
-        System.out.println(getToken());
-    }
+
 
 }

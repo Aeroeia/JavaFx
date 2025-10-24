@@ -26,9 +26,8 @@ import java.util.List;
  */
 public class GeoLocationService {
     
-    // API配置 - 实际使用时需要替换为真实的API Host和Token
-    private static final String API_HOST = "nv3md8tnqq.re.qweatherapi.com";
-    private static final String GEO_API_URL = "https://" + API_HOST + "/geo/v2/city/lookup";
+    // API配置
+    private static final String GEO_API_URL = "https://nv3md8tnqq.re.qweatherapi.com/geo/v2/city/lookup";
     
     private final CloseableHttpClient httpClient;
     
