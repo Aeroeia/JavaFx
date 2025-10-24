@@ -20,6 +20,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import java.util.concurrent.CompletableFuture;
 
 import java.util.List;
 
@@ -142,62 +143,84 @@ public class App extends Application {
     }
     
     private void loadWeather(String districtCode) {
-        System.out.println("=== 加载天气数据 ===");
+        System.out.println("=== 开始同步加载天气和空气质量数据 ===");
         System.out.println("区域代码: " + districtCode);
-        
-        // 加载天气预报
-        List<WeatherInfo> forecast = weatherService.getWeatherForecast(districtCode);
-        System.out.println("获取到天气预报数据条数: " + (forecast != null ? forecast.size() : 0));
-        
-        weatherCardsContainer.getChildren().clear();
-        
-        if (forecast != null) {
-            for (WeatherInfo weather : forecast) {
-                WeatherCard card = new WeatherCard();
-                card.updateWeather(weather);
-                weatherCardsContainer.getChildren().add(card);
-            }
-            System.out.println("天气卡片UI更新完成");
-        }
-        
-        // 加载空气质量数据
-        loadAirQuality(districtCode);
-    }
-
-    private void loadAirQuality(String districtCode) {
-        System.out.println("=== 加载空气质量数据 ===");
         
         // 获取选中区域的经纬度
         CityDistrict.District selectedDistrict = districtComboBox.getValue();
-        if (selectedDistrict != null) {
-            double latitude = selectedDistrict.getLatitude();
-            double longitude = selectedDistrict.getLongitude();
-            
-            System.out.println("空气质量查询坐标: " + latitude + ", " + longitude);
-            
-            // 异步加载空气质量数据
-            airQualityService.getCurrentAirQuality(latitude, longitude)
-                .thenAccept(airQuality -> {
-                    if (airQuality != null) {
-                        System.out.println("空气质量数据获取成功，开始更新UI");
-                        // 在JavaFX应用线程中更新UI
-                        javafx.application.Platform.runLater(() -> {
-                            airQualityPanel.setAirQuality(airQuality);
-                            airQualityPanel.show(); // 显示空气质量面板
-                            System.out.println("空气质量UI更新完成");
-                        });
-                    } else {
-                        System.err.println("空气质量数据获取失败");
-                    }
-                })
-                .exceptionally(throwable -> {
-                    System.err.println("空气质量数据加载异常: " + throwable.getMessage());
-                    return null;
-                });
-        } else {
-            System.err.println("无法获取选中区域信息，跳过空气质量数据加载");
+        if (selectedDistrict == null) {
+            System.err.println("无法获取选中区域信息");
+            return;
         }
+        
+        double latitude = selectedDistrict.getLatitude();
+        double longitude = selectedDistrict.getLongitude();
+        
+        // 使用CompletableFuture同时加载天气和空气质量数据
+        CompletableFuture<List<WeatherInfo>> weatherFuture = CompletableFuture.supplyAsync(() -> {
+            System.out.println("开始加载天气数据...");
+            List<WeatherInfo> forecast = weatherService.getWeatherForecast(districtCode);
+            System.out.println("天气数据加载完成，条数: " + (forecast != null ? forecast.size() : 0));
+            return forecast;
+        });
+        
+        CompletableFuture<AirQuality> airQualityFuture = airQualityService.getCurrentAirQuality(latitude, longitude);
+        
+        // 等待两个数据都加载完成后再更新UI
+        CompletableFuture.allOf(weatherFuture, airQualityFuture)
+            .thenRun(() -> {
+                System.out.println("天气和空气质量数据都已加载完成，开始更新UI");
+                
+                // 在JavaFX应用线程中更新UI
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        // 更新天气UI
+                        List<WeatherInfo> forecast = weatherFuture.get();
+                        weatherCardsContainer.getChildren().clear();
+                        
+                        if (forecast != null) {
+                            for (WeatherInfo weather : forecast) {
+                                WeatherCard card = new WeatherCard();
+                                card.updateWeather(weather);
+                                weatherCardsContainer.getChildren().add(card);
+                            }
+                            System.out.println("天气卡片UI更新完成");
+                        }
+                        
+                        // 更新空气质量UI
+                        AirQuality airQuality = airQualityFuture.get();
+                        if (airQuality != null) {
+                            airQualityPanel.setAirQuality(airQuality);
+                            airQualityPanel.show();
+                            System.out.println("空气质量UI更新完成");
+                        } else {
+                            System.err.println("空气质量数据为空");
+                            airQualityPanel.hide();
+                        }
+                        
+                        System.out.println("=== 所有数据加载和UI更新完成 ===");
+                        
+                    } catch (Exception e) {
+                        System.err.println("UI更新时发生异常: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            })
+            .exceptionally(throwable -> {
+                System.err.println("数据加载异常: " + throwable.getMessage());
+                throwable.printStackTrace();
+                
+                // 在异常情况下也要更新UI线程
+                javafx.application.Platform.runLater(() -> {
+                    // 隐藏空气质量面板
+                    airQualityPanel.hide();
+                });
+                
+                return null;
+            });
     }
+
+
 
     private BorderPane createMainLayout() {
         BorderPane root = new BorderPane();

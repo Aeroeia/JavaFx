@@ -115,7 +115,7 @@ public class AirQualityPanel extends VBox {
     }
     
     private void setupHealthSection() {
-        healthSection.setAlignment(Pos.TOP_LEFT);
+        healthSection.setAlignment(Pos.CENTER);
         healthSection.setPrefWidth(220);
         healthSection.setMaxWidth(220);
         healthSection.setPadding(new Insets(20));
@@ -125,11 +125,13 @@ public class AirQualityPanel extends VBox {
             "-fx-font-size: 16px;" +
             "-fx-font-weight: 600;" +
             "-fx-text-fill: #2d3748;" +
-            "-fx-font-family: 'SF Pro Display', 'PingFang SC', sans-serif;"
+            "-fx-font-family: 'SF Pro Display', 'PingFang SC', sans-serif;" +
+            "-fx-alignment: center;"
         );
         
         healthAdviceLabel.setWrapText(true);
         healthAdviceLabel.setMaxWidth(200);
+        healthAdviceLabel.setAlignment(Pos.CENTER);
         
         healthSection.getChildren().addAll(healthTitle, healthAdviceLabel);
     }
@@ -205,7 +207,9 @@ public class AirQualityPanel extends VBox {
             "-fx-font-size: 13px;" +
             "-fx-text-fill: #4a5568;" +
             "-fx-line-spacing: 3px;" +
-            "-fx-font-family: 'SF Pro Text', 'PingFang SC', sans-serif;"
+            "-fx-font-family: 'SF Pro Text', 'PingFang SC', sans-serif;" +
+            "-fx-text-alignment: center;" +
+            "-fx-alignment: center;"
         );
     }
 
@@ -253,11 +257,8 @@ public class AirQualityPanel extends VBox {
             }
             
             // 更新健康建议
-            if (primaryIndex.getHealth() != null && 
-                primaryIndex.getHealth().getAdvice() != null) {
-                String advice = primaryIndex.getHealth().getAdvice().getGeneralPopulation();
-                healthAdviceLabel.setText(advice != null ? advice : "暂无健康建议");
-            }
+            String healthAdvice = getHealthAdviceByAQI(primaryIndex);
+            healthAdviceLabel.setText(healthAdvice);
         }
 
         // 更新污染物网格显示
@@ -483,5 +484,80 @@ public class AirQualityPanel extends VBox {
     public void show() {
         this.setVisible(true);
         this.setManaged(true);
+    }
+    
+    /**
+     * 根据AQI等级获取健康建议
+     */
+    private String getHealthAdviceByAQI(AQIIndex aqiIndex) {
+        if (aqiIndex == null) {
+            return "暂无健康建议数据";
+        }
+        
+        // 首先尝试使用API返回的建议
+        if (aqiIndex.getHealth() != null && 
+            aqiIndex.getHealth().getAdvice() != null &&
+            aqiIndex.getHealth().getAdvice().getGeneralPopulation() != null) {
+            return aqiIndex.getHealth().getAdvice().getGeneralPopulation();
+        }
+        
+        // 如果API没有返回建议，根据AQI值和类别提供默认建议
+        String category = aqiIndex.getCategory();
+        if (category == null) {
+            category = "";
+        }
+        
+        // 根据AQI类别提供建议
+        switch (category.toLowerCase()) {
+            case "good":
+            case "优":
+                return "空气质量优良，适合各类人群进行户外活动。建议开窗通风，享受清新空气。";
+            
+            case "moderate":
+            case "良":
+                return "空气质量良好，敏感人群可能有轻微不适。一般人群可正常户外活动。";
+            
+            case "unhealthy for sensitive groups":
+            case "轻度污染":
+                return "敏感人群应减少户外活动，一般人群可适量户外运动。建议关闭门窗。";
+            
+            case "unhealthy":
+            case "中度污染":
+                return "所有人群应减少户外活动，敏感人群应避免户外运动。外出时建议佩戴口罩。";
+            
+            case "very unhealthy":
+            case "重度污染":
+                return "所有人群应避免户外活动，敏感人群应留在室内。必须外出时请佩戴专业防护口罩。";
+            
+            case "hazardous":
+            case "严重污染":
+                return "所有人群应避免户外活动并留在室内，关闭门窗。外出必须佩戴专业防护设备。";
+            
+            default:
+                // 根据AQI数值范围提供建议
+                try {
+                    String aqiStr = aqiIndex.getAqiDisplay();
+                    if (aqiStr != null && !aqiStr.equals("--")) {
+                        int aqi = Integer.parseInt(aqiStr);
+                        if (aqi <= 50) {
+                            return "空气质量优良，适合各类人群进行户外活动。";
+                        } else if (aqi <= 100) {
+                            return "空气质量良好，一般人群可正常户外活动。";
+                        } else if (aqi <= 150) {
+                            return "敏感人群应减少户外活动，建议关闭门窗。";
+                        } else if (aqi <= 200) {
+                            return "所有人群应减少户外活动，外出时建议佩戴口罩。";
+                        } else if (aqi <= 300) {
+                            return "所有人群应避免户外活动，必须外出时请佩戴专业防护口罩。";
+                        } else {
+                            return "所有人群应避免户外活动并留在室内，外出必须佩戴专业防护设备。";
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    // 如果无法解析AQI数值，返回通用建议
+                }
+                
+                return "请根据当前空气质量状况，适当调整户外活动计划。";
+        }
     }
 }
