@@ -80,6 +80,7 @@ public class App extends Application {
         
         // 初始化空气质量卡片
         airQualityCard = new AirQualityCard();
+        airQualityCard.hide(); // 默认隐藏，直到用户选择地区
     }
     
     private void setupLayout() {
@@ -114,6 +115,10 @@ public class App extends Application {
                 // 清空之前的数据显示
                 weatherCardsContainer.getChildren().clear();
                 System.out.println("已清空之前的天气数据显示");
+                
+                // 隐藏空气质量卡片，直到用户选择具体地区
+                airQualityCard.hide();
+                System.out.println("已隐藏空气质量卡片");
             }
         });
         
@@ -178,6 +183,7 @@ public class App extends Application {
                         // 在JavaFX应用线程中更新UI
                         javafx.application.Platform.runLater(() -> {
                             airQualityCard.setAirQuality(airQuality);
+                            airQualityCard.show(); // 显示空气质量卡片
                             System.out.println("空气质量UI更新完成");
                         });
                     } else {

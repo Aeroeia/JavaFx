@@ -46,16 +46,31 @@ public class AirQualityCard extends VBox {
         // 标题
         titleLabel.setAlignment(Pos.CENTER);
         
-        // AQI值和类别容器
-        VBox aqiContainer = new VBox(8);
-        aqiContainer.setAlignment(Pos.CENTER);
-        aqiContainer.setPadding(new Insets(10, 0, 15, 0));
-        aqiContainer.getChildren().addAll(aqiValueLabel, aqiCategoryLabel);
+        // 创建水平布局的主要内容区域
+        HBox mainContent = new HBox(20);
+        mainContent.setAlignment(Pos.TOP_LEFT);
+        mainContent.setPadding(new Insets(10, 0, 0, 0));
+        
+        // 左侧：AQI值和类别
+        VBox leftSection = new VBox(8);
+        leftSection.setAlignment(Pos.CENTER);
+        leftSection.setPrefWidth(120);
+        leftSection.setStyle(
+            "-fx-background-color: rgba(59, 130, 246, 0.05);" +
+            "-fx-background-radius: 12px;" +
+            "-fx-padding: 15px;"
+        );
+        
+        leftSection.getChildren().addAll(aqiValueLabel, aqiCategoryLabel);
+        
+        // 中间：污染物信息
+        VBox middleSection = new VBox(12);
+        middleSection.setAlignment(Pos.TOP_LEFT);
+        middleSection.setPrefWidth(200);
         
         // 首要污染物容器
-        VBox pollutantSection = new VBox(8);
+        VBox pollutantSection = new VBox(6);
         pollutantSection.setAlignment(Pos.CENTER_LEFT);
-        pollutantSection.setPadding(new Insets(0, 0, 10, 0));
         
         Label pollutantTitle = new Label("首要污染物");
         pollutantTitle.getStyleClass().add("section-title");
@@ -67,37 +82,41 @@ public class AirQualityCard extends VBox {
         pollutantSection.getChildren().addAll(pollutantTitle, pollutantContainer);
         
         // 污染物详情区域
-        VBox pollutantsSection = new VBox(8);
+        VBox pollutantsSection = new VBox(6);
         pollutantsSection.setAlignment(Pos.CENTER_LEFT);
-        pollutantsSection.setPadding(new Insets(0, 0, 10, 0));
         
         Label pollutantsTitle = new Label("污染物浓度");
         pollutantsTitle.getStyleClass().add("section-title");
         
         pollutantsSection.getChildren().addAll(pollutantsTitle, pollutantsContainer);
         
-        // 健康建议区域
-        VBox healthSection = new VBox(8);
-        healthSection.setAlignment(Pos.CENTER_LEFT);
+        middleSection.getChildren().addAll(pollutantSection, pollutantsSection);
+        
+        // 右侧：健康建议
+        VBox rightSection = new VBox(6);
+        rightSection.setAlignment(Pos.TOP_LEFT);
+        rightSection.setPrefWidth(180);
+        rightSection.setStyle(
+            "-fx-background-color: rgba(16, 185, 129, 0.05);" +
+            "-fx-background-radius: 12px;" +
+            "-fx-padding: 12px;"
+        );
         
         Label healthTitle = new Label("健康建议");
         healthTitle.getStyleClass().add("section-title");
         
-        healthSection.getChildren().addAll(healthTitle, healthAdviceLabel);
+        rightSection.getChildren().addAll(healthTitle, healthAdviceLabel);
+        
+        // 将三个部分添加到主内容区域
+        mainContent.getChildren().addAll(leftSection, middleSection, rightSection);
         
         // 设置主容器间距和对齐
         this.setSpacing(12);
         this.setAlignment(Pos.TOP_CENTER);
-        this.setPadding(new Insets(20, 18, 20, 18));
+        this.setPadding(new Insets(18, 16, 18, 16));
         
         // 添加所有组件
-        this.getChildren().addAll(
-            titleLabel,
-            aqiContainer,
-            pollutantSection,
-            pollutantsSection,
-            healthSection
-        );
+        this.getChildren().addAll(titleLabel, mainContent);
     }
 
     private void applyStyles() {
@@ -111,10 +130,10 @@ public class AirQualityCard extends VBox {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 3);"
         );
         
-        // 设置推荐大小 - 更宽敞的布局
-        this.setPrefWidth(320);
-        this.setPrefHeight(380);
-        this.setMaxWidth(320);
+        // 设置推荐大小 - 水平布局
+        this.setPrefWidth(520);
+        this.setPrefHeight(200);
+        this.setMaxWidth(520);
         
         // 标题样式 - 更现代的字体
         titleLabel.setStyle(
@@ -156,7 +175,7 @@ public class AirQualityCard extends VBox {
             "-fx-line-spacing: 2px;" +
             "-fx-font-family: 'SF Pro Text', 'PingFang SC', sans-serif;"
         );
-        healthAdviceLabel.setMaxWidth(280);
+        healthAdviceLabel.setMaxWidth(160);
         
         // 污染物容器样式
         pollutantsContainer.setSpacing(6);
@@ -333,5 +352,21 @@ public class AirQualityCard extends VBox {
      */
     public AirQuality getAirQuality() {
         return airQuality;
+    }
+    
+    /**
+     * 隐藏空气质量卡片
+     */
+    public void hide() {
+        this.setVisible(false);
+        this.setManaged(false);
+    }
+    
+    /**
+     * 显示空气质量卡片
+     */
+    public void show() {
+        this.setVisible(true);
+        this.setManaged(true);
     }
 }
