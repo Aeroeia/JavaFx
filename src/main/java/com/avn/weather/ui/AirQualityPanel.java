@@ -253,7 +253,12 @@ public class AirQualityPanel extends VBox {
             
             // 更新首要污染物
             if (primaryIndex.getPrimaryPollutant() != null) {
-                primaryPollutantLabel.setText("首要污染物: " + primaryIndex.getPrimaryPollutant().getName());
+                if(primaryIndex.getPrimaryPollutant().getName()==null||primaryIndex.getPrimaryPollutant().getName().equals("")){
+                    primaryPollutantLabel.setText("");
+                }
+                else{
+                    primaryPollutantLabel.setText("首要污染物: " + primaryIndex.getPrimaryPollutant().getName());
+                }
             }
             
             // 更新健康建议
