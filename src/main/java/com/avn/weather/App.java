@@ -6,7 +6,7 @@ import com.avn.weather.model.airquality.AirQuality;
 import com.avn.weather.service.WeatherDataService;
 import com.avn.weather.service.AirQualityService;
 import com.avn.weather.ui.WeatherCard;
-import com.avn.weather.ui.AirQualityCard;
+import com.avn.weather.ui.AirQualityPanel;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -30,7 +30,7 @@ public class App extends Application {
     private ComboBox<CityDistrict> cityComboBox;
     private ComboBox<CityDistrict.District> districtComboBox;
     private HBox weatherCardsContainer;
-    private AirQualityCard airQualityCard;
+    private AirQualityPanel airQualityPanel;
     private Label titleLabel;
     
     @Override
@@ -78,9 +78,9 @@ public class App extends Application {
         weatherCardsContainer.setAlignment(Pos.CENTER);
         weatherCardsContainer.setPadding(new Insets(20));
         
-        // 初始化空气质量卡片
-        airQualityCard = new AirQualityCard();
-        airQualityCard.hide(); // 默认隐藏，直到用户选择地区
+        // 初始化空气质量面板
+        airQualityPanel = new AirQualityPanel();
+        airQualityPanel.hide(); // 默认隐藏，直到用户选择地区
     }
     
     private void setupLayout() {
@@ -116,9 +116,9 @@ public class App extends Application {
                 weatherCardsContainer.getChildren().clear();
                 System.out.println("已清空之前的天气数据显示");
                 
-                // 隐藏空气质量卡片，直到用户选择具体地区
-                airQualityCard.hide();
-                System.out.println("已隐藏空气质量卡片");
+                // 隐藏空气质量面板，直到用户选择具体地区
+                airQualityPanel.hide();
+                System.out.println("已隐藏空气质量面板");
             }
         });
         
@@ -182,8 +182,8 @@ public class App extends Application {
                         System.out.println("空气质量数据获取成功，开始更新UI");
                         // 在JavaFX应用线程中更新UI
                         javafx.application.Platform.runLater(() -> {
-                            airQualityCard.setAirQuality(airQuality);
-                            airQualityCard.show(); // 显示空气质量卡片
+                            airQualityPanel.setAirQuality(airQuality);
+                            airQualityPanel.show(); // 显示空气质量面板
                             System.out.println("空气质量UI更新完成");
                         });
                     } else {
@@ -252,10 +252,11 @@ public class App extends Application {
         Label airQualityTitle = new Label("实时空气质量");
         airQualityTitle.setStyle(sectionTitleStyle);
         
-        // 空气质量卡片容器
-        HBox airQualityContainer = new HBox();
+        // 空气质量面板容器 - 充分利用宽度
+        VBox airQualityContainer = new VBox();
         airQualityContainer.setAlignment(Pos.CENTER);
-        airQualityContainer.getChildren().add(airQualityCard);
+        airQualityContainer.setPadding(new Insets(0, 0, 20, 0));
+        airQualityContainer.getChildren().add(airQualityPanel);
         
         centerContainer.getChildren().addAll(
             weatherTitle,
