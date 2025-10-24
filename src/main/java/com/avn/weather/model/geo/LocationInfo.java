@@ -62,6 +62,28 @@ public class LocationInfo {
     public String getFxLink() { return fxLink; }
     public void setFxLink(String fxLink) { this.fxLink = fxLink; }
 
+    /**
+     * 获取纬度（double类型）
+     */
+    public double getLatitude() {
+        try {
+            return lat != null ? Double.parseDouble(lat) : 0.0;
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    /**
+     * 获取经度（double类型）
+     */
+    public double getLongitude() {
+        try {
+            return lon != null ? Double.parseDouble(lon) : 0.0;
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
     @Override
     public String toString() {
         return "LocationInfo{" +

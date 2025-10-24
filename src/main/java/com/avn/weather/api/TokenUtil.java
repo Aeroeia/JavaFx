@@ -34,14 +34,25 @@ public class TokenUtil {
     public static String getToken() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
         long currentTime = System.currentTimeMillis() / 1000;
         
+        System.out.println("=== JWT Token 获取 ===");
+        System.out.println("当前时间戳: " + currentTime);
+        System.out.println("Token过期时间: " + tokenExpireTime);
+        
         // 检查缓存的Token是否仍然有效（提前5分钟刷新）
         if (cachedToken != null && currentTime < (tokenExpireTime - 300)) {
+            System.out.println("使用缓存的Token");
+            System.out.println("Token前缀: " + (cachedToken.length() > 50 ? cachedToken.substring(0, 50) + "..." : cachedToken));
             return cachedToken;
         }
         
+        System.out.println("生成新的JWT Token...");
         // 生成新的Token
         cachedToken = generateNewToken();
         tokenExpireTime = currentTime + TOKEN_VALIDITY_SECONDS;
+        
+        System.out.println("新Token生成成功");
+        System.out.println("Token前缀: " + (cachedToken.length() > 50 ? cachedToken.substring(0, 50) + "..." : cachedToken));
+        System.out.println("Token长度: " + cachedToken.length());
         
         return cachedToken;
     }
@@ -50,11 +61,13 @@ public class TokenUtil {
      * 生成新的JWT Token
      */
     private static String generateNewToken() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
-        System.out.println("生成token");
+        System.out.println("--- JWT生成过程 ---");
+        
         // 1️⃣ Header
         Map<String, Object> header = new HashMap<>();
         header.put("alg", "EdDSA");
         header.put("kid", "KKWECXMHXH");
+        System.out.println("Header: " + JSON.toJSONString(header));
 
         // 2️⃣ Payload（注意 iat 和 exp 必须是秒级 Unix 时间戳）
         long now = System.currentTimeMillis() / 1000; // 秒级
@@ -62,12 +75,15 @@ public class TokenUtil {
         payload.put("sub", "3DKTNRHP5U");
         payload.put("iat", now - 30);
         payload.put("exp", now + 80000);
+        System.out.println("Payload: " + payload.toJSONString());
+        System.out.println("Token有效期: " + (now + 80000 - now) + "秒");
 
         // 3️⃣ Base64URL 编码 Header 和 Payload
         Base64UrlCodec base64Url = new Base64UrlCodec();
         String headerEncoded = base64Url.encode(JSON.toJSONString(header).getBytes());
         String payloadEncoded = base64Url.encode(payload.toJSONString().getBytes());
         String signingInput = headerEncoded + "." + payloadEncoded;
+        System.out.println("签名输入: " + signingInput);
 
         // 4️⃣ 解析私钥
         String privateKeyBase64 = "MC4CAQAwBQYDK2VwBCIEICduFtPb/FsoNNvqP1f2+axOWIWjK9wyLHGqvZfduqiy";
@@ -86,6 +102,7 @@ public class TokenUtil {
         String jwt = signingInput + "." + sigBase64Url;
 
         // 验证签名（可选，用于确保Token正确性）
+        System.out.println("开始验证JWT签名...");
         String publicKeyBase64 = "MCowBQYDK2VwAyEACZR/bRIiOUo1bobd7deBp2PbS+nEbXYWYf9JBz0kQBo=";
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
         PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
@@ -95,10 +112,14 @@ public class TokenUtil {
         verifier.update(signingInput.getBytes("UTF-8"));
         boolean isValid = verifier.verify(Base64UrlCodec.BASE64URL.decode(sigBase64Url));
 
+        System.out.println("JWT签名验证结果: " + (isValid ? "成功" : "失败"));
+        
         if (!isValid) {
+            System.err.println("JWT签名验证失败！");
             throw new SignatureException("Token签名验证失败");
         }
-        System.out.println(jwt);
+        
+        System.out.println("JWT生成完成: " + jwt.substring(0, Math.min(100, jwt.length())) + "...");
         return jwt;
     }
 

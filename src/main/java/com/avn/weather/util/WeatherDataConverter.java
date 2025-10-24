@@ -80,7 +80,6 @@ public class WeatherDataConverter {
             return new WeatherInfo(date, dayName, condition, highTemp, lowTemp, windInfo, windScale, icon);
             
         } catch (Exception e) {
-            System.err.println("转换天气数据失败: " + e.getMessage());
             return null;
         }
     }

@@ -57,7 +57,12 @@ public class WeatherDataService {
                     String cityId = null;
                     for (LocationInfo district : districts) {
                         if(cityId!=null){
-                            districtList.add(new CityDistrict.District(district.getName(), district.getId()));
+                            districtList.add(new CityDistrict.District(
+                                district.getName(), 
+                                district.getId(),
+                                district.getLatitude(),
+                                district.getLongitude()
+                            ));
                             // 缓存区域ID
                             cityIdCache.put(district.getName(), district.getId());
                         }
@@ -66,12 +71,10 @@ public class WeatherDataService {
                             cityId = district.getId();
                         }
                     }
-                    System.out.println(cityName+":"+districtList);
                     
                     cities.add(new CityDistrict(cityName, cityId, districtList));
                 }
             } catch (Exception e) {
-                System.err.println("查询城市 " + cityName + " 失败: " + e.getMessage());
                 // 如果API查询失败，跳过该城市
             }
         }
@@ -88,7 +91,6 @@ public class WeatherDataService {
         try {
             // 直接使用传入的LocationID（从UI层传入的已经是有效的地区ID）
             if (locationId == null || locationId.trim().isEmpty()) {
-                System.err.println("LocationID为空");
                 return new ArrayList<>();
             }
             
@@ -99,16 +101,25 @@ public class WeatherDataService {
                 // 转换为UI使用的WeatherInfo格式
                 return WeatherDataConverter.convertToWeatherInfoList(dailyWeatherList);
             } else {
-                System.err.println("API返回空数据");
                 return new ArrayList<>();
             }
             
         } catch (Exception e) {
-            System.err.println("获取天气预报失败: " + e.getMessage());
-            e.printStackTrace();
             return new ArrayList<>();
         }
     }
-
     
+    /**
+     * 获取API Host配置
+     */
+    public String getApiHost() {
+        return weatherApiService.getApiHost();
+    }
+    
+    /**
+     * 获取JWT Token配置
+     */
+    public String getJwtToken() {
+        return weatherApiService.getJwtToken();
+    }
 }

@@ -45,6 +45,12 @@ public class GeoLocationService {
      */
     public List<LocationInfo> searchLocation(String location, String adm, String range, Integer number) {
         try {
+            System.out.println("=== 地理位置查询API请求 ===");
+            System.out.println("查询位置: " + location);
+            System.out.println("行政区划: " + adm);
+            System.out.println("搜索范围: " + range);
+            System.out.println("返回数量: " + number);
+            
             // 获取token
             String token = TokenUtil.getToken();
             
@@ -64,37 +70,42 @@ public class GeoLocationService {
                 urlBuilder.append("&number=").append(number);
             }
             
+            String finalUrl = urlBuilder.toString();
+            System.out.println("地理位置查询URL: " + finalUrl);
+            
             // 创建HTTP请求
-            HttpGet httpGet = new HttpGet(urlBuilder.toString());
+            HttpGet httpGet = new HttpGet(finalUrl);
             httpGet.setHeader("Authorization", "Bearer " + token);
             httpGet.setHeader("Accept-Encoding", "gzip");
             
+            System.out.println("地理位置查询请求头设置完成，开始发送请求...");
+            
             // 执行请求
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                int statusCode = response.getCode();
+                System.out.println("地理位置查询API响应状态码: " + statusCode);
+                
                 String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                System.out.println("地理位置查询API响应内容长度: " + (responseBody != null ? responseBody.length() : 0));
+                System.out.println("地理位置查询API响应内容: " + (responseBody != null && responseBody.length() > 200 ? 
+                    responseBody.substring(0, 200) + "..." : responseBody));
                 
                 // 解析JSON响应
                 LocationResponse locationResponse = JSON.parseObject(responseBody, LocationResponse.class);
                 
                 if ("200".equals(locationResponse.getCode()) && locationResponse.getLocation() != null) {
+                    System.out.println("地理位置查询成功，找到 " + locationResponse.getLocation().size() + " 个结果");
                     return locationResponse.getLocation();
                 } else {
-                    System.err.println("地理位置查询失败，状态码: " + locationResponse.getCode());
+                    System.err.println("地理位置查询失败，响应码: " + (locationResponse != null ? locationResponse.getCode() : "null"));
                     return new ArrayList<>();
                 }
             } catch (org.apache.hc.core5.http.ParseException e) {
-                System.err.println("响应解析失败: " + e.getMessage());
-                e.printStackTrace();
                 return new ArrayList<>();
             }
             
-        } catch (IOException e) {
-            System.err.println("地理位置查询请求失败: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | SignatureException e) {
-            System.err.println("Token生成失败: " + e.getMessage());
-            e.printStackTrace();
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | SignatureException e) {
+            System.err.println("地理位置查询异常: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -127,7 +138,7 @@ public class GeoLocationService {
                 httpClient.close();
             }
         } catch (IOException e) {
-            System.err.println("关闭HTTP客户端失败: " + e.getMessage());
+            // 静默处理关闭异常
         }
     }
     

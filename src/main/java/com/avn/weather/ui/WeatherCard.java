@@ -37,8 +37,8 @@ public class WeatherCard extends VBox {
     
     private void setupLayout() {
         setAlignment(Pos.CENTER);
-        setPadding(new Insets(10));
-        setSpacing(5);
+        setPadding(new Insets(16, 12, 16, 12));
+        setSpacing(8);
         
         getChildren().addAll(
             dateLabel,
@@ -51,31 +51,64 @@ public class WeatherCard extends VBox {
     }
     
     private void applyStyles() {
-        setStyle("-fx-background-color: #58C2DC; " +
-                "-fx-border-color: #dee2e6; " +
-                "-fx-border-width: 1; " +
-                "-fx-border-radius: 8; " +
-                "-fx-background-radius: 8;");
+        // 卡片整体样式 - 与AirQualityCard保持一致的现代化设计
+        setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #ffffff, #f8fafc);" +
+            "-fx-border-color: #e1e7ef;" +
+            "-fx-border-width: 1;" +
+            "-fx-border-radius: 16;" +
+            "-fx-background-radius: 16;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 3);"
+        );
         
-        dateLabel.setFont(Font.font("System", FontWeight.NORMAL, 12));
-        dateLabel.setStyle("-fx-text-fill: #6c757d;");
+        // 统一字体系列
+        String fontFamily = "'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif";
         
-        dayLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        dayLabel.setStyle("-fx-text-fill: #495057;");
+        dateLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-font-weight: normal;" +
+            "-fx-text-fill: #6b7280;" +
+            "-fx-font-family: " + fontFamily + ";"
+        );
         
-        iconLabel.setFont(Font.font("System", FontWeight.NORMAL, 24));
+        dayLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: 600;" +
+            "-fx-text-fill: #1a202c;" +
+            "-fx-font-family: " + fontFamily + ";"
+        );
         
-        conditionLabel.setFont(Font.font("System", FontWeight.NORMAL, 13));
-        conditionLabel.setStyle("-fx-text-fill: #495057;");
+        iconLabel.setStyle(
+            "-fx-font-size: 28px;" +
+            "-fx-font-weight: normal;" +
+            "-fx-text-fill: #3b82f6;" +
+            "-fx-font-family: " + fontFamily + ";"
+        );
         
-        temperatureLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
-        temperatureLabel.setStyle("-fx-text-fill: #dc3545;");
+        conditionLabel.setStyle(
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: 500;" +
+            "-fx-text-fill: #374151;" +
+            "-fx-font-family: " + fontFamily + ";"
+        );
         
-        windLabel.setFont(Font.font("System", FontWeight.NORMAL, 11));
-        windLabel.setStyle("-fx-text-fill: #6c757d;");
+        temperatureLabel.setStyle(
+            "-fx-font-size: 17px;" +
+            "-fx-font-weight: 700;" +
+            "-fx-text-fill: #1d4ed8;" +
+            "-fx-font-family: " + fontFamily + ";"
+        );
         
-        setPrefWidth(120);
-        setPrefHeight(160);
+        windLabel.setStyle(
+            "-fx-font-size: 11px;" +
+            "-fx-font-weight: normal;" +
+            "-fx-text-fill: #6b7280;" +
+            "-fx-font-family: " + fontFamily + ";"
+        );
+        
+        // 调整卡片尺寸以适应新的设计
+        setPrefWidth(145);
+        setPrefHeight(185);
     }
     
     public void updateWeather(WeatherInfo weather) {

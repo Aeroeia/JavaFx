@@ -1,5 +1,6 @@
 package com.avn.weather.model.district;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,12 +50,21 @@ public class CityDistrict {
     public static class District {
         private String districtName;
         private String districtCode;
+        private double latitude;
+        private double longitude;
 
         public District() {}
 
         public District(String districtName, String districtCode) {
             this.districtName = districtName;
             this.districtCode = districtCode;
+        }
+        
+        public District(String districtName, String districtCode, double latitude, double longitude) {
+            this.districtName = districtName;
+            this.districtCode = districtCode;
+            this.latitude = latitude;
+            this.longitude = longitude;
         }
 
         // Getters and Setters
@@ -74,7 +84,21 @@ public class CityDistrict {
             this.districtCode = districtCode;
         }
 
+        public double getLatitude() {
+            return latitude;
+        }
 
+        public void setLatitude(double latitude) {
+            this.latitude = latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public void setLongitude(double longitude) {
+            this.longitude = longitude;
+        }
 
         @Override
         public String toString() {
