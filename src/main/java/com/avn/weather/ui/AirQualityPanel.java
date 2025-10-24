@@ -499,13 +499,6 @@ public class AirQualityPanel extends VBox {
             return "暂无健康建议数据";
         }
         
-        // 首先尝试使用API返回的建议
-        if (aqiIndex.getHealth() != null && 
-            aqiIndex.getHealth().getAdvice() != null &&
-            aqiIndex.getHealth().getAdvice().getGeneralPopulation() != null) {
-            return aqiIndex.getHealth().getAdvice().getGeneralPopulation();
-        }
-        
         // 如果API没有返回建议，根据AQI值和类别提供默认建议
         String category = aqiIndex.getCategory();
         if (category == null) {
@@ -545,17 +538,17 @@ public class AirQualityPanel extends VBox {
                     if (aqiStr != null && !aqiStr.equals("--")) {
                         int aqi = Integer.parseInt(aqiStr);
                         if (aqi <= 50) {
-                            return "空气质量优良，适合各类人群进行户外活动。";
+                            return "空气质量优良，适合各类人群进行户外活动。建议开窗通风，享受清新空气。";
                         } else if (aqi <= 100) {
-                            return "空气质量良好，一般人群可正常户外活动。";
+                            return "空气质量良好，敏感人群可能有轻微不适。一般人群可正常户外活动。";
                         } else if (aqi <= 150) {
-                            return "敏感人群应减少户外活动，建议关闭门窗。";
+                            return "敏感人群应减少户外活动，一般人群可适量户外运动。建议关闭门窗。";
                         } else if (aqi <= 200) {
-                            return "所有人群应减少户外活动，外出时建议佩戴口罩。";
+                            return "所有人群应减少户外活动，敏感人群应避免户外运动。外出时建议佩戴口罩。";
                         } else if (aqi <= 300) {
-                            return "所有人群应避免户外活动，必须外出时请佩戴专业防护口罩。";
+                            return "所有人群应避免户外活动，敏感人群应留在室内。必须外出时请佩戴专业防护口罩。";
                         } else {
-                            return "所有人群应避免户外活动并留在室内，外出必须佩戴专业防护设备。";
+                            return "所有人群应避免户外活动并留在室内，关闭门窗。外出必须佩戴专业防护设备。";
                         }
                     }
                 } catch (NumberFormatException e) {
